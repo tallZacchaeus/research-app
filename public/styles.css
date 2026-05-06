@@ -1231,6 +1231,25 @@ a.section-nav-link:focus-visible,
   text-align: center;
 }
 
+/* --- Platform credit --- */
+.platform-credit {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.platform-credit strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.retention-note .platform-credit {
+  margin-top: 0.6rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--rule);
+  font-size: 0.75rem;
+}
+
 /* --- Anonymous trust callout --- */
 .trust-callout {
   display: flex;

@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Researcher's Objective Checklist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,15 +13,17 @@
     <header class="masthead">
       <div class="masthead-meta">
         <a href="index.html" style="color: var(--muted); text-decoration: none;">← Back to Home</a>
-        <span>Form 2 of 2</span>
+        <span>Form 2 of 3</span>
       </div>
       <div class="eyebrow">Form 2 · Field Observation</div>
       <h1>Researcher's Objective Security Checklist</h1>
-      <p class="lede" style="margin-top: 1rem;">On-site evaluation. Score 0 = Absent · 1 = Partial · 2 = Full. Live indices computed below.</p>
+      <p class="lede" style="margin-top: 1rem;">On-site evaluation. Score 0 = Absent · 1 = Partial · 2 = Full. Live indices computed below. Estimated time: 15 minutes.</p>
 
       <div style="margin-top: 1.5rem;">
         <div class="progress-bar"><div class="progress-fill"></div></div>
-        <div class="progress-label">0% complete</div>
+        <div class="progress-label">
+          <span class="progress-text">0% complete</span>
+        </div>
       </div>
     </header>
 
@@ -28,7 +32,11 @@
       <div style="flex: 1;">A draft was found and restored. <a href="#" id="discard-draft" style="color: var(--accent); text-decoration: underline;">Discard draft</a></div>
     </div>
 
-    <!-- LIVE INDEX DISPLAY -->
+    <details class="section-nav-wrapper" open>
+      <summary>Jump to section</summary>
+      <nav class="section-nav" id="section-nav" aria-label="Form sections"></nav>
+    </details>
+
     <div class="index-display">
       <div class="index-card">
         <div class="index-label">Adoption Index</div>
@@ -47,7 +55,16 @@
         <button type="button" class="btn btn-ghost" id="save-btn">Save draft</button>
         <button type="submit" class="btn btn-primary" id="submit-btn">Submit Field Report</button>
       </div>
+
+      <div class="retention-note">
+        Field reports are stored in a private Google Sheet accessible only to <strong>Arc Oluseye Dairo</strong> (principal researcher). Your draft remains on this device until you press Submit.
+      </div>
     </form>
+
+    <div class="floating-actions">
+      <button type="button" class="btn btn-secondary" id="save-btn-mobile">Save draft</button>
+      <button type="button" class="btn btn-primary" id="submit-btn-mobile">Submit</button>
+    </div>
   </main>
 
   <script src="data.js"></script>
@@ -56,57 +73,81 @@
     const FE = window.FormEngine;
     const formBody = document.getElementById('form-body');
 
-    // ============ HEADER FIELDS ============
     formBody.appendChild(FE.makeSection({
       id: 'sec-meta',
       eyebrow: 'Step 1',
       title: 'Site & Researcher Information',
+      eta: '2 min',
       body: [
         FE.buildTextField({ id: 'church_code', label: 'Church Name / Code', required: true }),
         FE.buildDateField({ id: 'visit_date', label: 'Date of Visit', required: true }),
         FE.buildTextField({ id: 'location', label: 'Location (State Capital)', required: true }),
-        FE.buildTextField({ id: 'capacity', label: 'Capacity (number of seats)', required: true, placeholder: 'e.g., 1200' }),
+        FE.buildTextField({
+          id: 'capacity',
+          label: 'Capacity (number of seats)',
+          required: true,
+          placeholder: 'e.g., 1200',
+          type: 'number',
+          inputmode: 'numeric',
+          min: 0
+        }),
         FE.buildTextField({ id: 'researcher', label: 'Researcher Name', required: true }),
 
         FE.el('div', { class: 'field' }, [
           FE.el('label', { class: 'field-label', html: 'GPS Coordinates <span class="req">*</span>' }),
           FE.el('div', { class: 'input-row' }, [
-            FE.el('input', { type: 'text', id: 'gps_lat', name: 'gps_lat', placeholder: 'Latitude', 'data-required': 'true' }),
-            FE.el('input', { type: 'text', id: 'gps_lng', name: 'gps_lng', placeholder: 'Longitude', 'data-required': 'true' })
+            FE.el('input', {
+              type: 'text', id: 'gps_lat', name: 'gps_lat',
+              placeholder: 'Latitude (-90 to 90)',
+              inputmode: 'decimal',
+              'data-required': 'true'
+            }),
+            FE.el('input', {
+              type: 'text', id: 'gps_lng', name: 'gps_lng',
+              placeholder: 'Longitude (-180 to 180)',
+              inputmode: 'decimal',
+              'data-required': 'true'
+            })
           ]),
+          FE.el('div', { class: 'field-error', id: 'gps_err', 'aria-live': 'polite' }),
           FE.el('button', {
             type: 'button',
             class: 'btn btn-secondary',
             style: 'margin-top: 0.75rem;',
             onClick: captureGPS
-          }, '📍 Auto-capture GPS')
+          }, '📍 Auto-capture GPS'),
+          FE.el('div', { class: 'help-text' }, 'Or paste coordinates from Google Maps. Latitude must be -90…90, longitude -180…180.')
         ])
       ]
     }));
 
-    // ============ SECTION 1: ADOPTION (18 items) ============
+    /* SECTION 1: ADOPTION (18 items) */
     const adoptionSection = FE.makeSection({
       id: 'sec-adoption',
       eyebrow: 'Section 1 · Objective 3',
       title: 'Voluntary Adoption Checklist (18 items)',
+      eta: '7 min',
       body: []
     });
     const adoptionBody = adoptionSection.querySelector('.section-body');
 
     DATA.adoptionChecklist18.forEach((item, idx) => {
       const num = idx + 1;
-      const wrapper = FE.el('div', { style: 'padding: 1rem; border-bottom: 1px solid var(--rule); margin-bottom: 0.5rem;' });
-      wrapper.appendChild(FE.el('div', { style: 'display: flex; gap: 0.5rem; margin-bottom: 0.75rem; align-items: flex-start;' }, [
-        FE.el('span', { style: 'font-family: IBM Plex Mono, monospace; font-size: 0.8rem; color: var(--accent); flex-shrink: 0; padding-top: 2px;' }, `A${num}.`),
-        FE.el('span', { style: 'font-size: 0.95rem;' }, item)
-      ]));
+      const wrapper = FE.el('div', { class: 'field' }, [
+        FE.el('div', { style: 'display: flex; gap: 0.5rem; margin-bottom: 0.75rem; align-items: flex-start;' }, [
+          FE.el('span', { style: 'font-family: IBM Plex Mono, monospace; font-size: 0.8rem; color: var(--accent); flex-shrink: 0; padding-top: 2px;' }, `A${num}.`),
+          FE.el('span', { style: 'font-size: 0.95rem;' }, item)
+        ])
+      ]);
 
-      // Score radio buttons
-      const scoreRow = FE.el('div', { style: 'display: flex; gap: 0.5rem; margin-bottom: 0.5rem;' });
+      const scoreRow = FE.el('div', { style: 'display: flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;' });
       ['0 (Absent)', '1 (Partial)', '2 (Full)'].forEach((opt, i) => {
         const radioId = `adopt_${num}_${i}`;
-        const label = FE.el('label', { for: radioId, style: 'display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius); cursor: pointer; flex: 1; justify-content: center; background: var(--paper);' }, [
-          FE.el('input', { type: 'radio', id: radioId, name: `adopt_${num}`, value: i, 'data-required': 'true', 'data-score-group': 'adoption' }),
+        const label = FE.el('label', {
+          for: radioId,
+          style: 'display: flex; align-items: center; gap: 0.4rem; padding: 0.6rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius); cursor: pointer; flex: 1; justify-content: center; background: var(--paper); min-height: 44px;'
+        }, [
+          FE.el('input', { type: 'radio', id: radioId, name: `adopt_${num}`, value: i, 'data-required': 'true', 'data-score-group': 'adoption', 'aria-label': `${item}: ${opt}` }),
           FE.el('span', { style: 'font-size: 0.85rem;' }, opt)
         ]);
         scoreRow.appendChild(label);
@@ -132,28 +173,33 @@
 
     formBody.appendChild(adoptionSection);
 
-    // ============ SECTION 2: REGULATORY (9 items) ============
+    /* SECTION 2: REGULATORY (9 items) */
     const complianceSection = FE.makeSection({
       id: 'sec-compliance',
       eyebrow: 'Section 2 · Objective 4',
       title: 'Regulatory Compliance Checklist (9 items)',
+      eta: '4 min',
       body: []
     });
     const complianceBody = complianceSection.querySelector('.section-body');
 
     DATA.complianceChecklist9.forEach((item, idx) => {
       const num = idx + 1;
-      const wrapper = FE.el('div', { style: 'padding: 1rem; border-bottom: 1px solid var(--rule); margin-bottom: 0.5rem;' });
-      wrapper.appendChild(FE.el('div', { style: 'display: flex; gap: 0.5rem; margin-bottom: 0.75rem; align-items: flex-start;' }, [
-        FE.el('span', { style: 'font-family: IBM Plex Mono, monospace; font-size: 0.8rem; color: var(--accent); flex-shrink: 0; padding-top: 2px;' }, `R${num}.`),
-        FE.el('span', { style: 'font-size: 0.95rem;' }, item)
-      ]));
+      const wrapper = FE.el('div', { class: 'field' }, [
+        FE.el('div', { style: 'display: flex; gap: 0.5rem; margin-bottom: 0.75rem; align-items: flex-start;' }, [
+          FE.el('span', { style: 'font-family: IBM Plex Mono, monospace; font-size: 0.8rem; color: var(--accent); flex-shrink: 0; padding-top: 2px;' }, `R${num}.`),
+          FE.el('span', { style: 'font-size: 0.95rem;' }, item)
+        ])
+      ]);
 
-      const scoreRow = FE.el('div', { style: 'display: flex; gap: 0.5rem; margin-bottom: 0.5rem;' });
+      const scoreRow = FE.el('div', { style: 'display: flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;' });
       ['0 (Non-compliant)', '1 (Partial)', '2 (Full)'].forEach((opt, i) => {
         const radioId = `reg_${num}_${i}`;
-        const label = FE.el('label', { for: radioId, style: 'display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius); cursor: pointer; flex: 1; justify-content: center; background: var(--paper);' }, [
-          FE.el('input', { type: 'radio', id: radioId, name: `reg_${num}`, value: i, 'data-required': 'true', 'data-score-group': 'compliance' }),
+        const label = FE.el('label', {
+          for: radioId,
+          style: 'display: flex; align-items: center; gap: 0.4rem; padding: 0.6rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius); cursor: pointer; flex: 1; justify-content: center; background: var(--paper); min-height: 44px;'
+        }, [
+          FE.el('input', { type: 'radio', id: radioId, name: `reg_${num}`, value: i, 'data-required': 'true', 'data-score-group': 'compliance', 'aria-label': `${item}: ${opt}` }),
           FE.el('span', { style: 'font-size: 0.85rem;' }, opt)
         ]);
         scoreRow.appendChild(label);
@@ -179,11 +225,11 @@
 
     formBody.appendChild(complianceSection);
 
-    // ============ SUMMARY ============
     formBody.appendChild(FE.makeSection({
       id: 'sec-summary',
       eyebrow: 'Final',
       title: 'Overall Summary & Posture Assessment',
+      eta: '2 min',
       body: [
         FE.buildTextarea({
           id: 'general_observations',
@@ -191,7 +237,13 @@
           help: 'Any contextual observations not captured by the checklist.',
           minHeight: 100
         }),
-        FE.buildTextField({ id: 'photo_count', label: 'Total Photos Taken (count)' }),
+        FE.buildTextField({
+          id: 'photo_count',
+          label: 'Total Photos Taken (count)',
+          type: 'number',
+          inputmode: 'numeric',
+          min: 0
+        }),
         FE.buildTextarea({
           id: 'photo_list',
           label: 'Photo Reference List',
@@ -213,7 +265,7 @@
       ]
     }));
 
-    // ============ GPS CAPTURE ============
+    /* GPS CAPTURE */
     function captureGPS() {
       if (!navigator.geolocation) {
         FE.toast('Geolocation not supported by this browser', 'error');
@@ -224,8 +276,9 @@
         (pos) => {
           document.getElementById('gps_lat').value = pos.coords.latitude.toFixed(6);
           document.getElementById('gps_lng').value = pos.coords.longitude.toFixed(6);
-          FE.toast('GPS captured', 'success');
+          FE.toast('✓ GPS captured', 'success');
           FE.updateProgress(form);
+          validateGPS();
         },
         (err) => {
           FE.toast(`GPS error: ${err.message}`, 'error');
@@ -234,29 +287,41 @@
       );
     }
 
-    // ============ LIVE INDEX CALCULATION ============
+    function validateGPS() {
+      const lat = document.getElementById('gps_lat');
+      const lng = document.getElementById('gps_lng');
+      const errSlot = document.getElementById('gps_err');
+      let msg = '';
+      if (lat.value && !FE.isValidLat(lat.value)) msg = 'Latitude must be a number between -90 and 90.';
+      else if (lng.value && !FE.isValidLng(lng.value)) msg = 'Longitude must be a number between -180 and 180.';
+      errSlot.textContent = msg;
+      lat.classList.toggle('has-error', !!(lat.value && !FE.isValidLat(lat.value)));
+      lng.classList.toggle('has-error', !!(lng.value && !FE.isValidLng(lng.value)));
+      return !msg;
+    }
+
+    /* LIVE INDEX CALCULATION */
     function updateIndices() {
-      // Adoption: 18 items × max 2 = 36 max
       let adoptionTotal = 0;
       for (let i = 1; i <= 18; i++) {
         const checked = document.querySelector(`input[name="adopt_${i}"]:checked`);
         if (checked) adoptionTotal += parseInt(checked.value);
       }
-      const adoptionPct = Math.round((adoptionTotal / 36) * 100);
-      document.getElementById('adoption-idx').textContent = adoptionPct;
+      document.getElementById('adoption-idx').textContent = Math.round((adoptionTotal / 36) * 100);
 
-      // Compliance: 9 items × max 2 = 18 max
       let complianceTotal = 0;
       for (let i = 1; i <= 9; i++) {
         const checked = document.querySelector(`input[name="reg_${i}"]:checked`);
         if (checked) complianceTotal += parseInt(checked.value);
       }
-      const compliancePct = Math.round((complianceTotal / 18) * 100);
-      document.getElementById('compliance-idx').textContent = compliancePct;
+      document.getElementById('compliance-idx').textContent = Math.round((complianceTotal / 18) * 100);
     }
 
-    // ============ INITIALIZE ============
+    /* INITIALIZE */
     const form = document.getElementById('checklist-form');
+
+    FE.setupSectionNav(form);
+    FE.addSectionContinueButtons(form);
 
     const savedAt = FE.loadDraft('checklist', form);
     if (savedAt) {
@@ -274,16 +339,24 @@
     }
 
     FE.setupAutosave('checklist', form);
+    FE.setupSaveIndicator('checklist', form);
     form.addEventListener('change', () => {
       FE.updateProgress(form);
       updateIndices();
     });
     form.addEventListener('input', () => FE.updateProgress(form));
+    document.getElementById('gps_lat').addEventListener('input', validateGPS);
+    document.getElementById('gps_lng').addEventListener('input', validateGPS);
     FE.updateProgress(form);
 
-    document.getElementById('save-btn').addEventListener('click', () => {
+    function manualSave() {
       if (FE.saveDraft('checklist', form)) FE.toast('Draft saved', 'success');
       else FE.toast('Save failed', 'error');
+    }
+    document.getElementById('save-btn').addEventListener('click', manualSave);
+    document.getElementById('save-btn-mobile').addEventListener('click', manualSave);
+    document.getElementById('submit-btn-mobile').addEventListener('click', () => {
+      document.getElementById('submit-btn').click();
     });
 
     form.addEventListener('submit', async (e) => {
@@ -291,8 +364,11 @@
       const submitBtn = document.getElementById('submit-btn');
 
       const errors = FE.validateForm(form);
-      if (errors.length) {
-        FE.toast(`Please complete required fields (${errors.length} missing)`, 'error');
+      const gpsOk = validateGPS();
+      if (errors.length || !gpsOk) {
+        FE.toast(`Please complete required fields${gpsOk ? '' : ' & fix GPS'}`, 'error');
+        const banner = form.querySelector('.form-error-banner');
+        if (banner) banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
       }
 
@@ -301,18 +377,17 @@
 
       try {
         const data = FE.collectFormData(form);
-        // Include computed indices
         data.adoption_index = document.getElementById('adoption-idx').textContent;
         data.compliance_index = document.getElementById('compliance-idx').textContent;
         await FE.submitToBackend('checklist', data);
         FE.clearDraft('checklist');
         FE.toast('Field report submitted', 'success');
         setTimeout(() => {
-          form.innerHTML = '<div class="section" style="text-align: center; padding: 4rem 2rem;"><h2 style="color: var(--success);">✓ Submission Received</h2><p class="text-muted" style="margin-top: 1rem;">Field report saved successfully.</p><a href="index.html" class="btn btn-secondary" style="margin-top: 2rem;">Return to Home</a></div>';
-        }, 1500);
+          document.querySelector('main.app').innerHTML = '<div class="section" style="text-align: center; padding: 4rem 2rem;"><h2 style="color: var(--success);">✓ Submission Received</h2><p class="text-muted" style="margin-top: 1rem;">Field report saved successfully.</p><a href="index.html" class="btn btn-secondary" style="margin-top: 2rem;">Return to Home</a></div>';
+        }, 1200);
       } catch (err) {
         console.error(err);
-        FE.toast(`Submission failed: ${err.message}`, 'error');
+        FE.toast(`Submission failed: ${err.message}. Your draft is still saved on this device.`, 'error');
         submitBtn.disabled = false;
         submitBtn.textContent = 'Submit Field Report';
       }

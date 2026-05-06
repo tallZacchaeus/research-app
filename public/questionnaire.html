@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Church Security Perceptual Survey</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -17,9 +19,18 @@
       <h1>Church Security Perceptual Survey</h1>
       <p class="lede" style="margin-top: 1rem;">South-West Nigeria · 2026. This survey is anonymous and voluntary. Estimated time: 30–35 minutes.</p>
 
+      <div class="trust-callout">
+        <span>🔒</span>
+        <div>
+          <strong>Anonymous</strong> · No login required · Your draft never leaves this device until you press Submit. No personally identifying details are required.
+        </div>
+      </div>
+
       <div style="margin-top: 1.5rem;">
         <div class="progress-bar"><div class="progress-fill"></div></div>
-        <div class="progress-label">0% complete</div>
+        <div class="progress-label">
+          <span class="progress-text">0% complete</span>
+        </div>
       </div>
     </header>
 
@@ -40,26 +51,34 @@
 
       <div class="field">
         <label class="field-label" style="font-weight: 600;">I agree to participate voluntarily <span class="req">*</span></label>
-        <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
-          <label for="consent_yes" style="flex: 1; display: flex; align-items: center; gap: 0.5rem; padding: 0.85rem 1rem; border: 1px solid var(--rule); border-radius: var(--radius); cursor: pointer; background: var(--paper);">
+        <div class="consent-choices">
+          <label for="consent_yes" class="consent-choice primary">
             <input type="radio" id="consent_yes" name="consent" value="Yes" data-required="true">
-            <span style="font-weight: 500;">Yes, I agree</span>
+            <span>✓ Yes, I agree — start the survey</span>
           </label>
-          <label for="consent_no" style="flex: 1; display: flex; align-items: center; gap: 0.5rem; padding: 0.85rem 1rem; border: 1px solid var(--rule); border-radius: var(--radius); cursor: pointer; background: var(--paper);">
+          <label for="consent_no" class="consent-choice">
             <input type="radio" id="consent_no" name="consent" value="No" data-required="true">
-            <span style="font-weight: 500;">No</span>
+            <span>No</span>
           </label>
         </div>
       </div>
     </section>
 
-    <!-- MAIN FORM (hidden until consent) -->
+    <details class="section-nav-wrapper hidden" id="nav-wrapper">
+      <summary>Jump to section</summary>
+      <nav class="section-nav" id="section-nav" aria-label="Form sections"></nav>
+    </details>
+
     <form id="questionnaire-form" novalidate class="hidden">
       <div id="form-body"></div>
 
       <div class="btn-row">
         <button type="button" class="btn btn-ghost" id="save-btn">Save draft</button>
         <button type="submit" class="btn btn-primary" id="submit-btn">Submit Survey</button>
+      </div>
+
+      <div class="retention-note">
+        Anonymous responses are stored in a private Google Sheet accessible only to <strong>Arc Oluseye Dairo</strong> (principal researcher). No identifying information is collected.
       </div>
     </form>
 
@@ -69,6 +88,11 @@
       <p class="text-muted" style="margin-top: 1rem;">You have chosen not to participate. We respect your decision. You may close this page.</p>
       <a href="index.html" class="btn btn-secondary" style="margin-top: 2rem;">Return to Home</a>
     </div>
+
+    <div class="floating-actions hidden" id="floating-actions">
+      <button type="button" class="btn btn-secondary" id="save-btn-mobile">Save draft</button>
+      <button type="button" class="btn btn-primary" id="submit-btn-mobile">Submit</button>
+    </div>
   </main>
 
   <script src="data.js"></script>
@@ -77,11 +101,12 @@
     const FE = window.FormEngine;
     const formBody = document.getElementById('form-body');
 
-    // ============ SECTION A: DEMOGRAPHICS ============
+    /* SECTION A: DEMOGRAPHICS */
     formBody.appendChild(FE.makeSection({
       id: 'sec-a',
       eyebrow: 'Section A · Demographics',
       title: 'Demographics & Church Profile',
+      eta: '3 min',
       body: [
         FE.buildSelect({
           id: 'state_capital',
@@ -181,11 +206,12 @@
       ]
     }));
 
-    // ============ SECTION B: CHALLENGES (18 items, 1-5) ============
+    /* SECTION B: CHALLENGES */
     formBody.appendChild(FE.makeSection({
       id: 'sec-b',
       eyebrow: 'Section B · Objective 1',
       title: 'Security Challenges Observed at This Church',
+      eta: '7 min',
       startCollapsed: true,
       body: [
         FE.el('p', { class: 'help-text', style: 'margin-bottom: 1.5rem;' },
@@ -213,11 +239,12 @@
       ]
     }));
 
-    // ============ SECTION C: BARRIERS (18 items, 1-5) ============
+    /* SECTION C: BARRIERS */
     formBody.appendChild(FE.makeSection({
       id: 'sec-c',
       eyebrow: 'Section C · Objective 2',
       title: 'Barriers Hindering Security Adoption',
+      eta: '7 min',
       startCollapsed: true,
       body: [
         FE.el('p', { class: 'help-text', style: 'margin-bottom: 1.5rem;' },
@@ -255,11 +282,12 @@
       ]
     }));
 
-    // ============ SECTION D: ADOPTION OF MEASURES (18 items, 0/1/2) ============
+    /* SECTION D: ADOPTION OF MEASURES */
     formBody.appendChild(FE.makeSection({
       id: 'sec-d',
       eyebrow: 'Section D · Objective 3',
       title: 'Adoption of Security Measures',
+      eta: '5 min',
       startCollapsed: true,
       body: [
         FE.el('p', { class: 'help-text', style: 'margin-bottom: 1.5rem;' },
@@ -275,11 +303,12 @@
       ]
     }));
 
-    // ============ SECTION E: SATISFACTION (34 items, 1-5) ============
+    /* SECTION E: SATISFACTION */
     formBody.appendChild(FE.makeSection({
       id: 'sec-e',
       eyebrow: 'Section E · Objective 5',
       title: "Users' Satisfaction with Security Measures",
+      eta: '10 min',
       startCollapsed: true,
       body: [
         FE.el('p', { class: 'help-text', style: 'margin-bottom: 1.5rem;' },
@@ -306,35 +335,46 @@
       ]
     }));
 
-    // ============ INITIALIZE ============
+    /* INITIALIZE */
     const form = document.getElementById('questionnaire-form');
     const consentGate = document.getElementById('consent-gate');
     const declinedMessage = document.getElementById('declined-message');
+    const navWrapper = document.getElementById('nav-wrapper');
+    const floatingActions = document.getElementById('floating-actions');
 
-    // Consent gate logic
+    FE.setupSectionNav(form);
+    FE.addSectionContinueButtons(form);
+
+    function showForm() {
+      form.classList.remove('hidden');
+      navWrapper.classList.remove('hidden');
+      floatingActions.classList.remove('hidden');
+      declinedMessage.classList.add('hidden');
+    }
+    function hideForm() {
+      form.classList.add('hidden');
+      navWrapper.classList.add('hidden');
+      floatingActions.classList.add('hidden');
+      declinedMessage.classList.remove('hidden');
+    }
+
     document.querySelectorAll('input[name="consent"]').forEach(radio => {
       radio.addEventListener('change', (e) => {
         if (e.target.value === 'Yes') {
-          form.classList.remove('hidden');
-          declinedMessage.classList.add('hidden');
-          // Smooth scroll to first section
+          showForm();
           setTimeout(() => {
             document.getElementById('sec-a').scrollIntoView({ behavior: 'smooth', block: 'start' });
           }, 200);
         } else {
-          form.classList.add('hidden');
-          declinedMessage.classList.remove('hidden');
+          hideForm();
         }
       });
     });
 
-    // Try to load draft (only if consent already given)
     const savedAt = FE.loadDraft('questionnaire', form);
     if (savedAt) {
       const consentRadio = document.querySelector('input[name="consent"][value="Yes"]');
-      if (consentRadio && consentRadio.checked) {
-        form.classList.remove('hidden');
-      }
+      if (consentRadio && consentRadio.checked) showForm();
       const banner = document.getElementById('resume-banner');
       banner.classList.remove('hidden');
       banner.querySelector('div').innerHTML = `📝 Draft restored from ${new Date(savedAt).toLocaleString()}. <a href="#" id="discard-draft" style="color: var(--accent); text-decoration: underline;">Discard draft</a>`;
@@ -348,13 +388,19 @@
     }
 
     FE.setupAutosave('questionnaire', form);
+    FE.setupSaveIndicator('questionnaire', form);
     form.addEventListener('change', () => FE.updateProgress(form));
     form.addEventListener('input', () => FE.updateProgress(form));
     FE.updateProgress(form);
 
-    document.getElementById('save-btn').addEventListener('click', () => {
+    function manualSave() {
       if (FE.saveDraft('questionnaire', form)) FE.toast('Draft saved', 'success');
       else FE.toast('Save failed', 'error');
+    }
+    document.getElementById('save-btn').addEventListener('click', manualSave);
+    document.getElementById('save-btn-mobile').addEventListener('click', manualSave);
+    document.getElementById('submit-btn-mobile').addEventListener('click', () => {
+      document.getElementById('submit-btn').click();
     });
 
     form.addEventListener('submit', async (e) => {
@@ -363,7 +409,9 @@
 
       const errors = FE.validateForm(form);
       if (errors.length) {
-        FE.toast(`Please complete required fields (${errors.length} missing)`, 'error');
+        FE.toast(`Please complete ${errors.length} required field${errors.length === 1 ? '' : 's'}`, 'error');
+        const banner = form.querySelector('.form-error-banner');
+        if (banner) banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
       }
 
@@ -372,7 +420,6 @@
 
       try {
         const data = FE.collectFormData(form);
-        // Include consent status from outside the form
         const consentValue = document.querySelector('input[name="consent"]:checked');
         data.consent = consentValue ? consentValue.value : '';
 
@@ -381,10 +428,10 @@
         FE.toast('Survey submitted. Thank you!', 'success');
         setTimeout(() => {
           document.querySelector('main.app').innerHTML = '<div class="section" style="text-align: center; padding: 4rem 2rem;"><h2 style="color: var(--success);">✓ Thank You</h2><p class="text-muted" style="margin-top: 1rem; max-width: 50ch; margin-left: auto; margin-right: auto;">Your responses will help protect God\'s people. God bless you.</p><a href="index.html" class="btn btn-secondary" style="margin-top: 2rem;">Return to Home</a></div>';
-        }, 1500);
+        }, 1200);
       } catch (err) {
         console.error(err);
-        FE.toast(`Submission failed: ${err.message}`, 'error');
+        FE.toast(`Submission failed: ${err.message}. Your draft is still saved on this device.`, 'error');
         submitBtn.disabled = false;
         submitBtn.textContent = 'Submit Survey';
       }

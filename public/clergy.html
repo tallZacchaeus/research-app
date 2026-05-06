@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clergy Interview — Schedules A–D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,15 +13,17 @@
     <header class="masthead">
       <div class="masthead-meta">
         <a href="index.html" style="color: var(--muted); text-decoration: none;">← Back to Home</a>
-        <span>Form 1 of 2</span>
+        <span>Form 1 of 3</span>
       </div>
       <div class="eyebrow">Form 1 · Interview Schedule</div>
-      <h1>Clergy & Building Committee Interview</h1>
-      <p class="lede" style="margin-top: 1rem;">Four schedules covering security challenges, barriers, voluntary measures, and regulatory compliance.</p>
+      <h1>Clergy &amp; Building Committee Interview</h1>
+      <p class="lede" style="margin-top: 1rem;">Four schedules covering security challenges, barriers, voluntary measures, and regulatory compliance. Estimated time: 35 minutes. Your draft auto-saves to this device.</p>
 
       <div style="margin-top: 1.5rem;">
         <div class="progress-bar"><div class="progress-fill"></div></div>
-        <div class="progress-label">0% complete</div>
+        <div class="progress-label">
+          <span class="progress-text">0% complete</span>
+        </div>
       </div>
     </header>
 
@@ -28,15 +32,28 @@
       <div style="flex: 1;">A draft was found. Your previous answers have been restored. <a href="#" id="discard-draft" style="color: var(--accent); text-decoration: underline;">Discard draft</a></div>
     </div>
 
+    <details class="section-nav-wrapper" open>
+      <summary>Jump to section</summary>
+      <nav class="section-nav" id="section-nav" aria-label="Form sections"></nav>
+    </details>
+
     <form id="clergy-form" novalidate>
-      <!-- Form sections injected by JS -->
       <div id="form-body"></div>
 
       <div class="btn-row">
         <button type="button" class="btn btn-ghost" id="save-btn">Save draft manually</button>
         <button type="submit" class="btn btn-primary" id="submit-btn">Submit Interview</button>
       </div>
+
+      <div class="retention-note">
+        Responses are stored in a private Google Sheet accessible only to <strong>Arc Oluseye Dairo</strong> (principal researcher). Your draft remains on this device until you press Submit.
+      </div>
     </form>
+
+    <div class="floating-actions">
+      <button type="button" class="btn btn-secondary" id="save-btn-mobile">Save draft</button>
+      <button type="button" class="btn btn-primary" id="submit-btn-mobile">Submit</button>
+    </div>
   </main>
 
   <script src="data.js"></script>
@@ -45,11 +62,11 @@
     const FE = window.FormEngine;
     const formBody = document.getElementById('form-body');
 
-    // ============ RESPONDENT INFO ============
     formBody.appendChild(FE.makeSection({
       id: 'sec-info',
       eyebrow: 'Step 1',
       title: 'Respondent Information',
+      eta: '2 min',
       body: [
         FE.buildTextField({ id: 'church_name', label: 'Name of Church', required: true }),
         FE.buildTextField({ id: 'respondent_name', label: 'Respondent Name', required: true }),
@@ -64,22 +81,22 @@
       ]
     }));
 
-    // ============ SCHEDULE A: 42 CHALLENGES ============
     formBody.appendChild(FE.makeSection({
       id: 'sec-a',
       eyebrow: 'Schedule A · Objective 1',
       title: 'Evaluation of Security Challenges',
+      eta: '10 min',
       startCollapsed: true,
       body: [
         FE.el('p', { class: 'help-text', style: 'margin-bottom: 1.5rem;' },
-          'Step 1: Select your Top 10 most relevant challenges from the list of 42. Step 2: Rank those 10 in order of priority. Step 3: Provide detailed explanations for your Top 3.'),
+          'Three steps: (1) Tick your Top 10 most relevant challenges from the list of 42. (2) Rank those 10 in order of priority. (3) Explain your Top 3 in detail.'),
 
         FE.buildSelectionList({
           id: 'a_top10',
           prefix: 'A',
           items: DATA.challenges42,
           label: 'Step 1 — Select your Top 10 Most Relevant Challenges',
-          help: 'Tick exactly 10 boxes.',
+          help: 'Tick exactly 10. Use the search box to find an item quickly.',
           expectedCount: 10
         }),
 
@@ -91,29 +108,18 @@
           options: DATA.challenges42,
           count: 10,
           label: 'Step 2 — Rank Your Top 10 (1 = Most Pressing)',
-          help: 'Each rank must be a unique challenge.'
+          help: 'Each dropdown only shows the items you ticked above. Each rank must be unique.',
+          dependsOn: 'a_top10'
         }),
 
         FE.el('hr', { class: 'section-rule', style: 'margin: 2rem 0;' }),
 
-        FE.el('h3', {}, 'Step 3 — Detailed Explanations for Top 3'),
-        FE.buildTextarea({
-          id: 'a_top1_explain',
-          label: 'Top 1 — Detailed Explanation',
-          required: true,
-          help: 'Explain how this challenge manifests architecturally and why it is critical.',
-          minHeight: 100
-        }),
-        FE.buildTextarea({
-          id: 'a_top2_explain',
-          label: 'Top 2 — Detailed Explanation',
-          required: true,
-          minHeight: 100
-        }),
-        FE.buildTextarea({
-          id: 'a_top3_explain',
-          label: 'Top 3 — Detailed Explanation',
-          required: true,
+        FE.buildTopNExplanations({
+          id: 'a_top3',
+          dependsOnRank: 'a_rank',
+          count: 3,
+          label: 'Step 3 — Detailed Explanations for Top 3',
+          help: 'Each block shows the item you placed at that rank. Explain how it manifests architecturally and why it is critical.',
           minHeight: 100
         }),
 
@@ -126,15 +132,15 @@
       ]
     }));
 
-    // ============ SCHEDULE B: 40 BARRIERS ============
     formBody.appendChild(FE.makeSection({
       id: 'sec-b',
       eyebrow: 'Schedule B · Objective 2',
       title: 'Examination of Barriers',
+      eta: '10 min',
       startCollapsed: true,
       body: [
         FE.el('p', { class: 'help-text', style: 'margin-bottom: 1.5rem;' },
-          'Step 1: Score each barrier on hindrance level. Step 2: Identify your Top 5. Step 3: Explain why those 5 are critical.'),
+          'Three steps: (1) Score each barrier on hindrance level. (2) Identify your Top 5. (3) Explain why those 5 are critical.'),
 
         FE.buildScoringGrid({
           id: 'b_hindrance',
@@ -153,7 +159,7 @@
           prefix: 'B',
           items: DATA.barriers40,
           label: 'Step 2 — Select Your Top 5 Most Significant Barriers',
-          help: 'Tick exactly 5 boxes.',
+          help: 'Tick exactly 5. Use the search box to find an item quickly.',
           expectedCount: 5
         }),
 
@@ -165,7 +171,8 @@
           options: DATA.barriers40,
           count: 5,
           label: 'Step 3 — Rank Top 5 with Explanations',
-          help: 'For each, explain why it is critical and how it manifests.'
+          help: 'Dropdowns show only the items you selected in Step 2. For each, explain why it is critical.',
+          dependsOn: 'b_top5'
         }),
 
         FE.buildTextarea({
@@ -177,15 +184,15 @@
       ]
     }));
 
-    // ============ SCHEDULE C: 22 VOLUNTARY MEASURES ============
     formBody.appendChild(FE.makeSection({
       id: 'sec-c',
       eyebrow: 'Schedule C · Objective 3',
       title: 'Adoption of Voluntary Security Measures',
+      eta: '7 min',
       startCollapsed: true,
       body: [
         FE.el('p', { class: 'help-text', style: 'margin-bottom: 1.5rem;' },
-          'Step 1: Indicate presence of each measure. Step 2: Explain reasons for absence/partial adoption. Step 3: Rank Top 10 most feasible to adopt in next 12 months.'),
+          'Three steps: (1) Indicate presence of each measure. (2) Explain reasons for absence/partial adoption. (3) Rank Top 10 most feasible to adopt in next 12 months.'),
 
         FE.buildScoringGrid({
           id: 'c_presence',
@@ -208,14 +215,24 @@
 
         FE.el('hr', { class: 'section-rule', style: 'margin: 2rem 0;' }),
 
+        FE.buildSelectionList({
+          id: 'c_feasible_pick',
+          prefix: 'C',
+          items: DATA.voluntaryMeasures22,
+          label: 'Step 3a — Pick the 10 measures most feasible to adopt in 12 months',
+          help: 'Tick exactly 10.',
+          expectedCount: 10
+        }),
+
         FE.buildRankWithExplanation({
           id: 'c_feasibility',
           prefix: 'C',
           options: DATA.voluntaryMeasures22,
           count: 10,
-          label: 'Step 3 — Top 10 Most Feasible to Adopt (Next 12 Months)',
+          label: 'Step 3b — Rank those 10 with explanation and estimated cost',
           help: 'For each, explain why it is feasible and provide an estimated cost.',
-          includeCost: true
+          includeCost: true,
+          dependsOn: 'c_feasible_pick'
         }),
 
         FE.buildTextarea({
@@ -227,15 +244,15 @@
       ]
     }));
 
-    // ============ SCHEDULE D: 28 REGULATORY MEASURES ============
     formBody.appendChild(FE.makeSection({
       id: 'sec-d',
       eyebrow: 'Schedule D · Objective 4',
       title: 'Compliance with Regulatory/Statutory Measures',
+      eta: '6 min',
       startCollapsed: true,
       body: [
         FE.el('p', { class: 'help-text', style: 'margin-bottom: 1.5rem;' },
-          'Step 1: Indicate compliance level. Step 2: Explain reasons for partial/non-compliance. Step 3: Rank Top 5 most challenging to comply with.'),
+          'Three steps: (1) Indicate compliance level. (2) Explain reasons for partial/non-compliance. (3) Rank Top 5 most challenging to comply with.'),
 
         FE.buildScoringGrid({
           id: 'd_compliance',
@@ -258,13 +275,23 @@
 
         FE.el('hr', { class: 'section-rule', style: 'margin: 2rem 0;' }),
 
+        FE.buildSelectionList({
+          id: 'd_challenge_pick',
+          prefix: 'D',
+          items: DATA.regulatoryMeasures28,
+          label: 'Step 3a — Pick the 5 most challenging measures',
+          help: 'Tick exactly 5.',
+          expectedCount: 5
+        }),
+
         FE.buildRankWithExplanation({
           id: 'd_challenge',
           prefix: 'D',
           options: DATA.regulatoryMeasures28,
           count: 5,
-          label: 'Step 3 — Top 5 Most Challenging Measures',
-          help: 'For each, explain why compliance is challenging.'
+          label: 'Step 3b — Rank those 5 with explanations',
+          help: 'For each, explain why compliance is challenging.',
+          dependsOn: 'd_challenge_pick'
         }),
 
         FE.buildTextarea({
@@ -276,11 +303,11 @@
       ]
     }));
 
-    // ============ FINAL ============
     formBody.appendChild(FE.makeSection({
       id: 'sec-final',
       eyebrow: 'Final',
       title: 'Additional Insights',
+      eta: '2 min',
       body: [
         FE.buildTextarea({
           id: 'final_comments',
@@ -291,10 +318,13 @@
       ]
     }));
 
-    // ============ INITIALIZE ============
+    /* ============ INITIALIZE ============ */
     const form = document.getElementById('clergy-form');
 
-    // Try to load draft
+    FE.wireDependencies(form);
+    FE.setupSectionNav(form);
+    FE.addSectionContinueButtons(form);
+
     const savedAt = FE.loadDraft('clergy', form);
     if (savedAt) {
       const banner = document.getElementById('resume-banner');
@@ -309,29 +339,31 @@
       });
     }
 
-    // Autosave + progress tracking
     FE.setupAutosave('clergy', form);
+    FE.setupSaveIndicator('clergy', form);
     form.addEventListener('input', () => FE.updateProgress(form));
     form.addEventListener('change', () => FE.updateProgress(form));
     FE.updateProgress(form);
 
-    // Manual save button
-    document.getElementById('save-btn').addEventListener('click', () => {
+    function manualSave() {
       if (FE.saveDraft('clergy', form)) FE.toast('Draft saved', 'success');
       else FE.toast('Save failed', 'error');
+    }
+    document.getElementById('save-btn').addEventListener('click', manualSave);
+    document.getElementById('save-btn-mobile').addEventListener('click', manualSave);
+    document.getElementById('submit-btn-mobile').addEventListener('click', () => {
+      document.getElementById('submit-btn').click();
     });
 
-    // Submit handler
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const submitBtn = document.getElementById('submit-btn');
 
       const errors = FE.validateForm(form);
       if (errors.length) {
-        FE.toast(`Please complete required fields (${errors.length} missing)`, 'error');
-        // Scroll to first error
-        const firstError = form.querySelector('[style*="border-color: rgb(168, 50, 50)"], [style*="background: rgba(168, 50, 50"]');
-        if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        FE.toast(`Please complete ${errors.length} required field${errors.length === 1 ? '' : 's'}`, 'error');
+        const banner = form.querySelector('.form-error-banner');
+        if (banner) banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
       }
 
@@ -344,11 +376,11 @@
         FE.clearDraft('clergy');
         FE.toast('Interview submitted successfully', 'success');
         setTimeout(() => {
-          form.innerHTML = '<div class="section" style="text-align: center; padding: 4rem 2rem;"><h2 style="color: var(--success);">✓ Submission Received</h2><p class="text-muted" style="margin-top: 1rem;">Thank you for your contribution to this research. You may now close this page.</p><a href="index.html" class="btn btn-secondary" style="margin-top: 2rem;">Return to Home</a></div>';
-        }, 1500);
+          document.querySelector('main.app').innerHTML = '<div class="section" style="text-align: center; padding: 4rem 2rem;"><h2 style="color: var(--success);">✓ Submission Received</h2><p class="text-muted" style="margin-top: 1rem;">Thank you for your contribution to this research.</p><a href="index.html" class="btn btn-secondary" style="margin-top: 2rem;">Return to Home</a></div>';
+        }, 1200);
       } catch (err) {
         console.error(err);
-        FE.toast(`Submission failed: ${err.message}`, 'error');
+        FE.toast(`Submission failed: ${err.message}. Your draft is still saved on this device.`, 'error');
         submitBtn.disabled = false;
         submitBtn.textContent = 'Submit Interview';
       }

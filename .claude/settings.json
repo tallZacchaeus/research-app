@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --check public/form-engine.js)",
+      "Bash(node --check public/data.js)",
+      "Bash(node -e ' *)",
+      "Bash(node --check api/AppsScript_Backend.gs)",
+      "Bash(cp api/AppsScript_Backend.gs /tmp/_check.js)",
+      "Bash(node --check /tmp/_check.js)",
+      "Bash(rm /tmp/_check.js)"
+    ]
+  }
+}

@@ -21,28 +21,61 @@
 
 // ============ ENTRY POINT (handles POST from frontend) ============
 function doPost(e) {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(15000);
+  } catch (err) {
+    return jsonResponse({ ok: false, error: 'Server busy, please retry' });
+  }
+
   try {
     const payload = JSON.parse(e.postData.contents);
-    const { formType, submittedAt, data } = payload;
+    const { formType, submittedAt, data, submissionId } = payload;
 
     if (!formType || !data) {
       return jsonResponse({ ok: false, error: 'Missing formType or data' });
     }
 
+    const sid = submissionId || (data && data.submissionId) || '';
+
+    let sheetName, headers, writer;
     if (formType === 'clergy') {
-      writeClergyRow(submittedAt, data);
+      sheetName = 'Clergy_Interviews'; headers = getClergyHeaders(); writer = writeClergyRow;
     } else if (formType === 'checklist') {
-      writeChecklistRow(submittedAt, data);
+      sheetName = 'Field_Checklists'; headers = getChecklistHeaders(); writer = writeChecklistRow;
     } else if (formType === 'questionnaire') {
-      writeQuestionnaireRow(submittedAt, data);
+      sheetName = 'Questionnaire_Responses'; headers = getQuestionnaireHeaders(); writer = writeQuestionnaireRow;
     } else {
       return jsonResponse({ ok: false, error: `Unknown formType: ${formType}` });
     }
 
+    // Idempotency check: if this submissionId already exists, return success without re-appending.
+    if (sid && hasSubmissionId(sheetName, sid)) {
+      return jsonResponse({ ok: true, message: 'Already received', duplicate: true });
+    }
+
+    writer(submittedAt, data, sid);
     return jsonResponse({ ok: true, message: 'Saved successfully' });
   } catch (err) {
     return jsonResponse({ ok: false, error: err.toString() });
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
   }
+}
+
+function hasSubmissionId(sheetName, sid) {
+  if (!sid) return false;
+  const sheet = getOrCreateSheet(sheetName);
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return false;
+  const headerRow = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const colIdx = headerRow.indexOf('submission_id');
+  if (colIdx === -1) return false;
+  const ids = sheet.getRange(2, colIdx + 1, lastRow - 1, 1).getValues();
+  for (let i = 0; i < ids.length; i++) {
+    if (ids[i][0] === sid) return true;
+  }
+  return false;
 }
 
 // Optional GET handler for sanity check
@@ -57,55 +90,42 @@ function jsonResponse(obj) {
 }
 
 // ============ SHEET WRITERS ============
-function writeClergyRow(submittedAt, data) {
+function buildRow(headers, submittedAt, data, submissionId) {
+  return headers.map(h => {
+    if (h === 'submitted_at') return submittedAt;
+    if (h === 'submission_id') return submissionId || '';
+    const value = data[h];
+    if (Array.isArray(value)) return value.join(', ');
+    return value !== undefined && value !== null ? String(value) : '';
+  });
+}
+
+function writeClergyRow(submittedAt, data, submissionId) {
   const sheet = getOrCreateSheet('Clergy_Interviews');
   const headers = getClergyHeaders();
   ensureHeaders(sheet, headers);
-
-  const row = headers.map(h => {
-    if (h === 'submitted_at') return submittedAt;
-    const value = data[h];
-    if (Array.isArray(value)) return value.join(', ');
-    return value !== undefined && value !== null ? String(value) : '';
-  });
-
-  sheet.appendRow(row);
+  sheet.appendRow(buildRow(headers, submittedAt, data, submissionId));
 }
 
-function writeChecklistRow(submittedAt, data) {
+function writeChecklistRow(submittedAt, data, submissionId) {
   const sheet = getOrCreateSheet('Field_Checklists');
   const headers = getChecklistHeaders();
   ensureHeaders(sheet, headers);
-
-  const row = headers.map(h => {
-    if (h === 'submitted_at') return submittedAt;
-    const value = data[h];
-    if (Array.isArray(value)) return value.join(', ');
-    return value !== undefined && value !== null ? String(value) : '';
-  });
-
-  sheet.appendRow(row);
+  sheet.appendRow(buildRow(headers, submittedAt, data, submissionId));
 }
 
-function writeQuestionnaireRow(submittedAt, data) {
+function writeQuestionnaireRow(submittedAt, data, submissionId) {
   const sheet = getOrCreateSheet('Questionnaire_Responses');
   const headers = getQuestionnaireHeaders();
   ensureHeaders(sheet, headers);
-
-  const row = headers.map(h => {
-    if (h === 'submitted_at') return submittedAt;
-    const value = data[h];
-    if (Array.isArray(value)) return value.join(', ');
-    return value !== undefined && value !== null ? String(value) : '';
-  });
-
-  sheet.appendRow(row);
+  sheet.appendRow(buildRow(headers, submittedAt, data, submissionId));
 }
 
 // ============ HEADER DEFINITIONS ============
 function getClergyHeaders() {
   const headers = [
     'submitted_at',
+    'submission_id',
     'church_name',
     'respondent_name',
     'respondent_role',
@@ -113,24 +133,25 @@ function getClergyHeaders() {
     'church_location'
   ];
 
-  // Schedule A
+  // Schedule A — selection + linked rank + Top 3 explanations
   headers.push('a_top10');
   for (let i = 1; i <= 10; i++) headers.push(`a_rank_rank${i}`);
-  headers.push('a_top1_explain', 'a_top2_explain', 'a_top3_explain', 'a_closing_probe');
+  for (let i = 1; i <= 3; i++) headers.push(`a_top3_${i}_explain`);
+  headers.push('a_closing_probe');
 
-  // Schedule B — hindrance scores
+  // Schedule B — hindrance + Top 5 selection + linked rank + explanations
   for (let i = 1; i <= 40; i++) headers.push(`b_hindrance_${i}`);
   headers.push('b_top5');
-  // Top 5 ranks + explanations
   for (let i = 1; i <= 5; i++) {
     headers.push(`b_rank_rank${i}`);
     headers.push(`b_rank_rank${i}_explain`);
   }
   headers.push('b_closing_probe');
 
-  // Schedule C — presence + reasons + feasibility
+  // Schedule C — presence + reasons + feasibility selection + ranked feasibility
   for (let i = 1; i <= 22; i++) headers.push(`c_presence_${i}`);
   for (let i = 1; i <= 22; i++) headers.push(`c_reason_${i}`);
+  headers.push('c_feasible_pick');
   for (let i = 1; i <= 10; i++) {
     headers.push(`c_feasibility_rank${i}`);
     headers.push(`c_feasibility_rank${i}_explain`);
@@ -138,9 +159,10 @@ function getClergyHeaders() {
   }
   headers.push('c_closing_probe');
 
-  // Schedule D — compliance + reasons + challenges
+  // Schedule D — compliance + reasons + challenge selection + ranked challenges
   for (let i = 1; i <= 28; i++) headers.push(`d_compliance_${i}`);
   for (let i = 1; i <= 28; i++) headers.push(`d_reason_${i}`);
+  headers.push('d_challenge_pick');
   for (let i = 1; i <= 5; i++) {
     headers.push(`d_challenge_rank${i}`);
     headers.push(`d_challenge_rank${i}_explain`);
@@ -154,6 +176,7 @@ function getClergyHeaders() {
 function getChecklistHeaders() {
   const headers = [
     'submitted_at',
+    'submission_id',
     'church_code',
     'visit_date',
     'location',
@@ -193,6 +216,7 @@ function getChecklistHeaders() {
 function getQuestionnaireHeaders() {
   const headers = [
     'submitted_at',
+    'submission_id',
     'consent',
     // Section A: Demographics (12)
     'state_capital',

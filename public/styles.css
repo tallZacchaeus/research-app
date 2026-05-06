@@ -1243,6 +1243,16 @@ a.section-nav-link:focus-visible,
   font-weight: 600;
 }
 
+.platform-credit a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+}
+
+.platform-credit a:hover {
+  border-bottom-style: solid;
+}
+
 .retention-note .platform-credit {
   margin-top: 0.6rem;
   padding-top: 0.5rem;

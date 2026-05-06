@@ -75,11 +75,9 @@ coverage/
 .clasprc.json
 
 # ============================================================
-# Personal Claude Code settings (the shared settings.json stays tracked)
+# Claude Code settings (personal — never commit)
 # ============================================================
-.claude/settings.local.json
-.claude/cache/
-.claude/logs/
+.claude/
 
 # ============================================================
 # Word document lock files & temp scratch

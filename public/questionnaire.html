@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Church Security Perceptual Survey</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="masthead">
+      <div class="masthead-meta">
+        <a href="index.html" style="color: var(--muted); text-decoration: none;">← Back to Home</a>
+        <span>Form 3 of 3 · Anonymous</span>
+      </div>
+      <div class="eyebrow">Perceptual Survey · 108 Items</div>
+      <h1>Church Security Perceptual Survey</h1>
+      <p class="lede" style="margin-top: 1rem;">South-West Nigeria · 2026. This survey is anonymous and voluntary. Estimated time: 30–35 minutes.</p>
+
+      <div style="margin-top: 1.5rem;">
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <div class="progress-label">0% complete</div>
+      </div>
+    </header>
+
+    <div id="resume-banner" class="banner info hidden">
+      <span>📝</span>
+      <div style="flex: 1;">A draft was found and restored. <a href="#" id="discard-draft" style="color: var(--accent); text-decoration: underline;">Discard draft</a></div>
+    </div>
+
+    <!-- CONSENT GATE -->
+    <section class="section" id="consent-gate">
+      <h2>Consent to Participate</h2>
+      <p style="color: var(--muted); margin: 1rem 0; line-height: 1.6;">
+        Thank you for participating in this PhD research on architectural design strategies for enhancing security in church buildings in South-West Nigeria. This survey is completely <strong>anonymous and voluntary</strong>. Your responses will help develop better security strategies for churches.
+      </p>
+      <p style="color: var(--muted); margin-bottom: 1.5rem;">
+        By proceeding, you confirm that you understand the purpose of this study and agree to participate voluntarily. You may stop at any time without consequence.
+      </p>
+
+      <div class="field">
+        <label class="field-label" style="font-weight: 600;">I agree to participate voluntarily <span class="req">*</span></label>
+        <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+          <label for="consent_yes" style="flex: 1; display: flex; align-items: center; gap: 0.5rem; padding: 0.85rem 1rem; border: 1px solid var(--rule); border-radius: var(--radius); cursor: pointer; background: var(--paper);">
+            <input type="radio" id="consent_yes" name="consent" value="Yes" data-required="true">
+            <span style="font-weight: 500;">Yes, I agree</span>
+          </label>
+          <label for="consent_no" style="flex: 1; display: flex; align-items: center; gap: 0.5rem; padding: 0.85rem 1rem; border: 1px solid var(--rule); border-radius: var(--radius); cursor: pointer; background: var(--paper);">
+            <input type="radio" id="consent_no" name="consent" value="No" data-required="true">
+            <span style="font-weight: 500;">No</span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- MAIN FORM (hidden until consent) -->
+    <form id="questionnaire-form" novalidate class="hidden">
+      <div id="form-body"></div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-ghost" id="save-btn">Save draft</button>
+        <button type="submit" class="btn btn-primary" id="submit-btn">Submit Survey</button>
+      </div>
+    </form>
+
+    <!-- DECLINED MESSAGE -->
+    <div id="declined-message" class="section hidden" style="text-align: center; padding: 3rem 2rem;">
+      <h2>Thank you</h2>
+      <p class="text-muted" style="margin-top: 1rem;">You have chosen not to participate. We respect your decision. You may close this page.</p>
+      <a href="index.html" class="btn btn-secondary" style="margin-top: 2rem;">Return to Home</a>
+    </div>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="form-engine.js"></script>
+  <script>
+    const FE = window.FormEngine;
+    const formBody = document.getElementById('form-body');
+
+    // ============ SECTION A: DEMOGRAPHICS ============
+    formBody.appendChild(FE.makeSection({
+      id: 'sec-a',
+      eyebrow: 'Section A · Demographics',
+      title: 'Demographics & Church Profile',
+      body: [
+        FE.buildSelect({
+          id: 'state_capital',
+          label: '1. State Capital',
+          options: [
+            'Lagos (Ikeja/Lagos Island)',
+            'Abeokuta (Ogun)',
+            'Ibadan (Oyo)',
+            'Osogbo (Osun)',
+            'Akure (Ondo)',
+            'Ado-Ekiti (Ekiti)'
+          ],
+          required: true
+        }),
+        FE.buildTextField({
+          id: 'church_name',
+          label: '2. Church Name',
+          required: true,
+          help: 'Will be anonymised for reporting.'
+        }),
+        FE.buildSelect({
+          id: 'denomination',
+          label: '3. Denomination',
+          options: [
+            'Roman Catholic',
+            'Redeemed Christian Church of God (RCCG)',
+            'The Apostolic Church Nigeria (TAC)'
+          ],
+          required: true
+        }),
+        FE.buildSelect({
+          id: 'role',
+          label: '4. Your role in this church',
+          options: [
+            'Regular worshipper',
+            'Senior Pastor/Priest',
+            'Assistant Pastor/Priest',
+            'Usher/Security Team Member',
+            'Choir Member',
+            "Children's Ministry Worker",
+            'Other'
+          ],
+          required: true
+        }),
+        FE.buildTextField({
+          id: 'role_other',
+          label: 'If Other, specify',
+          help: 'Leave blank if not applicable.'
+        }),
+        FE.buildSelect({
+          id: 'gender',
+          label: '5. Gender',
+          options: ['Male', 'Female', 'Prefer not to say'],
+          required: true
+        }),
+        FE.buildSelect({
+          id: 'age_group',
+          label: '6. Age group',
+          options: ['<25 years', '25–34 years', '35–44 years', '45–59 years', '≥60 years'],
+          required: true
+        }),
+        FE.buildSelect({
+          id: 'years_at_church',
+          label: '7. Years worshipped at this church',
+          options: ['<1 year', '1–5 years', '6–10 years', '>10 years'],
+          required: true
+        }),
+        FE.buildSelect({
+          id: 'attendance',
+          label: '8. Average Sunday attendance',
+          options: ['<500', '500–1,000', '1,001–2,000', '>2,000'],
+          required: true
+        }),
+        FE.buildSelect({
+          id: 'lives_within_5km',
+          label: '9. Do you live within 5 km of this church?',
+          options: ['Yes', 'No'],
+          required: true
+        }),
+        FE.buildSelect({
+          id: 'education',
+          label: '10. Highest educational level',
+          options: ['Primary', 'Secondary', 'Tertiary', 'Postgraduate'],
+          required: true
+        }),
+        FE.buildSelect({
+          id: 'employment',
+          label: '11. Employment status',
+          options: ['Employed full-time', 'Self-employed', 'Unemployed', 'Student', 'Retired'],
+          required: true
+        }),
+        FE.buildSelect({
+          id: 'children_attending',
+          label: '12. Children under 18 attending with you?',
+          options: ['Yes', 'No'],
+          required: true
+        })
+      ]
+    }));
+
+    // ============ SECTION B: CHALLENGES (18 items, 1-5) ============
+    formBody.appendChild(FE.makeSection({
+      id: 'sec-b',
+      eyebrow: 'Section B · Objective 1',
+      title: 'Security Challenges Observed at This Church',
+      startCollapsed: true,
+      body: [
+        FE.el('p', { class: 'help-text', style: 'margin-bottom: 1.5rem;' },
+          'How often have you personally observed or experienced the following security challenges in or around this church building? (1=Never, 2=Rarely, 3=Sometimes, 4=Often, 5=Very Often)'),
+
+        FE.buildScoringGrid({
+          id: 'b_freq',
+          prefix: 'B',
+          rows: DATA.questionnaireChallenges18,
+          columns: ['1 (Never)', '2', '3', '4', '5 (Very Often)'],
+          required: true
+        }),
+
+        FE.buildTextarea({
+          id: 'b19_other_challenge',
+          label: 'B19. Have you experienced any other security challenge not listed above?',
+          help: 'If yes, please describe.',
+          minHeight: 80
+        }),
+        FE.buildTextarea({
+          id: 'b20_safety_impact',
+          label: 'B20. How has the most frequent challenge (from B1–B18) affected your sense of safety?',
+          minHeight: 80
+        })
+      ]
+    }));
+
+    // ============ SECTION C: BARRIERS (18 items, 1-5) ============
+    formBody.appendChild(FE.makeSection({
+      id: 'sec-c',
+      eyebrow: 'Section C · Objective 2',
+      title: 'Barriers Hindering Security Adoption',
+      startCollapsed: true,
+      body: [
+        FE.el('p', { class: 'help-text', style: 'margin-bottom: 1.5rem;' },
+          'To what extent do each of the following factors hinder the adoption and implementation of security measures in this church? (1=No hindrance at all, 5=Major hindrance)'),
+
+        FE.buildScoringGrid({
+          id: 'c_barriers',
+          prefix: 'C',
+          rows: DATA.questionnaireBarriers18,
+          columns: ['1 (None)', '2', '3', '4', '5 (Major)'],
+          required: true
+        }),
+
+        FE.buildTextarea({
+          id: 'c19_other_barrier',
+          label: 'C19. Are there any other barriers not listed above?',
+          help: 'If yes, please describe.',
+          minHeight: 80
+        }),
+        FE.buildTextarea({
+          id: 'c20_most_significant',
+          label: 'C20. Which of the 18 barriers above is the MOST significant in your church? Why?',
+          minHeight: 80
+        }),
+        FE.buildTextarea({
+          id: 'c21_barrier_impact',
+          label: 'C21. How has this major barrier affected security adoption?',
+          minHeight: 80
+        }),
+        FE.buildTextarea({
+          id: 'c22_helpful_change',
+          label: 'C22. What one change would most help overcome barriers here?',
+          minHeight: 80
+        })
+      ]
+    }));
+
+    // ============ SECTION D: ADOPTION OF MEASURES (18 items, 0/1/2) ============
+    formBody.appendChild(FE.makeSection({
+      id: 'sec-d',
+      eyebrow: 'Section D · Objective 3',
+      title: 'Adoption of Security Measures',
+      startCollapsed: true,
+      body: [
+        FE.el('p', { class: 'help-text', style: 'margin-bottom: 1.5rem;' },
+          'To what extent are the following voluntary security measures adopted/implemented in this church? (0=No - not adopted, 1=Not sure / partially implemented, 2=Yes - fully adopted)'),
+
+        FE.buildScoringGrid({
+          id: 'd_adoption',
+          prefix: 'D',
+          rows: DATA.questionnaireMeasures18,
+          columns: ['0 (No)', '1 (Not sure / Partial)', '2 (Yes)'],
+          required: true
+        })
+      ]
+    }));
+
+    // ============ SECTION E: SATISFACTION (34 items, 1-5) ============
+    formBody.appendChild(FE.makeSection({
+      id: 'sec-e',
+      eyebrow: 'Section E · Objective 5',
+      title: "Users' Satisfaction with Security Measures",
+      startCollapsed: true,
+      body: [
+        FE.el('p', { class: 'help-text', style: 'margin-bottom: 1.5rem;' },
+          'Please rate your agreement with the following statements about the security measures in this church. (1 = Strongly Disagree, 5 = Strongly Agree)'),
+
+        FE.buildScoringGrid({
+          id: 'e_satisfaction',
+          prefix: 'E',
+          rows: DATA.questionnaireSatisfaction34,
+          columns: ['1 (Disagree)', '2', '3', '4', '5 (Agree)'],
+          required: true
+        }),
+
+        FE.buildTextarea({
+          id: 'e35_likes',
+          label: 'E35. What do you like most about the security measures in this church?',
+          minHeight: 80
+        }),
+        FE.buildTextarea({
+          id: 'e36_improvement',
+          label: 'E36. What one improvement would make you feel safer?',
+          minHeight: 80
+        })
+      ]
+    }));
+
+    // ============ INITIALIZE ============
+    const form = document.getElementById('questionnaire-form');
+    const consentGate = document.getElementById('consent-gate');
+    const declinedMessage = document.getElementById('declined-message');
+
+    // Consent gate logic
+    document.querySelectorAll('input[name="consent"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (e.target.value === 'Yes') {
+          form.classList.remove('hidden');
+          declinedMessage.classList.add('hidden');
+          // Smooth scroll to first section
+          setTimeout(() => {
+            document.getElementById('sec-a').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 200);
+        } else {
+          form.classList.add('hidden');
+          declinedMessage.classList.remove('hidden');
+        }
+      });
+    });
+
+    // Try to load draft (only if consent already given)
+    const savedAt = FE.loadDraft('questionnaire', form);
+    if (savedAt) {
+      const consentRadio = document.querySelector('input[name="consent"][value="Yes"]');
+      if (consentRadio && consentRadio.checked) {
+        form.classList.remove('hidden');
+      }
+      const banner = document.getElementById('resume-banner');
+      banner.classList.remove('hidden');
+      banner.querySelector('div').innerHTML = `📝 Draft restored from ${new Date(savedAt).toLocaleString()}. <a href="#" id="discard-draft" style="color: var(--accent); text-decoration: underline;">Discard draft</a>`;
+      document.getElementById('discard-draft').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (confirm('Discard saved draft and start fresh?')) {
+          FE.clearDraft('questionnaire');
+          location.reload();
+        }
+      });
+    }
+
+    FE.setupAutosave('questionnaire', form);
+    form.addEventListener('change', () => FE.updateProgress(form));
+    form.addEventListener('input', () => FE.updateProgress(form));
+    FE.updateProgress(form);
+
+    document.getElementById('save-btn').addEventListener('click', () => {
+      if (FE.saveDraft('questionnaire', form)) FE.toast('Draft saved', 'success');
+      else FE.toast('Save failed', 'error');
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById('submit-btn');
+
+      const errors = FE.validateForm(form);
+      if (errors.length) {
+        FE.toast(`Please complete required fields (${errors.length} missing)`, 'error');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting…';
+
+      try {
+        const data = FE.collectFormData(form);
+        // Include consent status from outside the form
+        const consentValue = document.querySelector('input[name="consent"]:checked');
+        data.consent = consentValue ? consentValue.value : '';
+
+        await FE.submitToBackend('questionnaire', data);
+        FE.clearDraft('questionnaire');
+        FE.toast('Survey submitted. Thank you!', 'success');
+        setTimeout(() => {
+          document.querySelector('main.app').innerHTML = '<div class="section" style="text-align: center; padding: 4rem 2rem;"><h2 style="color: var(--success);">✓ Thank You</h2><p class="text-muted" style="margin-top: 1rem; max-width: 50ch; margin-left: auto; margin-right: auto;">Your responses will help protect God\'s people. God bless you.</p><a href="index.html" class="btn btn-secondary" style="margin-top: 2rem;">Return to Home</a></div>';
+        }, 1500);
+      } catch (err) {
+        console.error(err);
+        FE.toast(`Submission failed: ${err.message}`, 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Survey';
+      }
+    });
+  </script>
+</body>
+</html>

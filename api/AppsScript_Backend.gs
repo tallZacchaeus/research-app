@@ -33,6 +33,8 @@ function doPost(e) {
       writeClergyRow(submittedAt, data);
     } else if (formType === 'checklist') {
       writeChecklistRow(submittedAt, data);
+    } else if (formType === 'questionnaire') {
+      writeQuestionnaireRow(submittedAt, data);
     } else {
       return jsonResponse({ ok: false, error: `Unknown formType: ${formType}` });
     }
@@ -73,6 +75,21 @@ function writeClergyRow(submittedAt, data) {
 function writeChecklistRow(submittedAt, data) {
   const sheet = getOrCreateSheet('Field_Checklists');
   const headers = getChecklistHeaders();
+  ensureHeaders(sheet, headers);
+
+  const row = headers.map(h => {
+    if (h === 'submitted_at') return submittedAt;
+    const value = data[h];
+    if (Array.isArray(value)) return value.join(', ');
+    return value !== undefined && value !== null ? String(value) : '';
+  });
+
+  sheet.appendRow(row);
+}
+
+function writeQuestionnaireRow(submittedAt, data) {
+  const sheet = getOrCreateSheet('Questionnaire_Responses');
+  const headers = getQuestionnaireHeaders();
   ensureHeaders(sheet, headers);
 
   const row = headers.map(h => {
@@ -173,6 +190,44 @@ function getChecklistHeaders() {
   return headers;
 }
 
+function getQuestionnaireHeaders() {
+  const headers = [
+    'submitted_at',
+    'consent',
+    // Section A: Demographics (12)
+    'state_capital',
+    'church_name',
+    'denomination',
+    'role',
+    'role_other',
+    'gender',
+    'age_group',
+    'years_at_church',
+    'attendance',
+    'lives_within_5km',
+    'education',
+    'employment',
+    'children_attending'
+  ];
+
+  // Section B: 18 challenges (frequency 1-5)
+  for (let i = 1; i <= 18; i++) headers.push(`b_freq_${i}`);
+  headers.push('b19_other_challenge', 'b20_safety_impact');
+
+  // Section C: 18 barriers (hindrance 1-5)
+  for (let i = 1; i <= 18; i++) headers.push(`c_barriers_${i}`);
+  headers.push('c19_other_barrier', 'c20_most_significant', 'c21_barrier_impact', 'c22_helpful_change');
+
+  // Section D: 18 measures (adoption 0/1/2)
+  for (let i = 1; i <= 18; i++) headers.push(`d_adoption_${i}`);
+
+  // Section E: 34 satisfaction items (1-5)
+  for (let i = 1; i <= 34; i++) headers.push(`e_satisfaction_${i}`);
+  headers.push('e35_likes', 'e36_improvement');
+
+  return headers;
+}
+
 // ============ HELPERS ============
 function getOrCreateSheet(name) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -202,9 +257,13 @@ function setupSheets() {
   const checklistSheet = getOrCreateSheet('Field_Checklists');
   ensureHeaders(checklistSheet, getChecklistHeaders());
 
+  const questionnaireSheet = getOrCreateSheet('Questionnaire_Responses');
+  ensureHeaders(questionnaireSheet, getQuestionnaireHeaders());
+
   Logger.log('✓ Sheets set up successfully');
   Logger.log('Clergy headers: ' + getClergyHeaders().length + ' columns');
   Logger.log('Checklist headers: ' + getChecklistHeaders().length + ' columns');
+  Logger.log('Questionnaire headers: ' + getQuestionnaireHeaders().length + ' columns');
 }
 
 // ============ TEST FUNCTION (run after deploy to verify) ============

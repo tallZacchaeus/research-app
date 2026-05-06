@@ -675,8 +675,19 @@ textarea {
   margin-top: 3rem;
 }
 
+.landing-grid-three {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 900px) {
+  .landing-grid-three {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 700px) {
-  .landing-grid {
+  .landing-grid,
+  .landing-grid-three {
     grid-template-columns: 1fr;
   }
 }

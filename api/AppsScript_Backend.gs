@@ -292,7 +292,12 @@ function setupSheets() {
 
 // ============ TEST FUNCTION (run after deploy to verify) ============
 function testWrite() {
-  writeChecklistRow(new Date().toISOString(), {
+  const now = new Date().toISOString();
+  const testId = 'TEST-' + Date.now();
+
+  // 1. Checklist
+  const checklistSid = testId + '-checklist';
+  writeChecklistRow(now, {
     church_code: 'TEST_001',
     visit_date: '2026-05-05',
     location: 'Lagos',
@@ -304,6 +309,49 @@ function testWrite() {
     adopt_1_notes: 'Test notes',
     adoption_index: '85',
     compliance_index: '70'
-  });
-  Logger.log('Test row written');
+  }, checklistSid);
+  Logger.log('✓ Checklist row written, submission_id=' + checklistSid);
+
+  // 2. Clergy
+  const clergySid = testId + '-clergy';
+  writeClergyRow(now, {
+    church_name: 'Test Church',
+    respondent_name: 'Test Respondent',
+    respondent_role: 'Clergy',
+    interview_date: '2026-05-05',
+    church_location: 'Lagos',
+    a_top10: ['A1', 'A2', 'A3'],
+    a_rank_rank1: 'A1',
+    a_top3_1_explain: 'Sample explanation',
+    final_comments: 'Test run via testWrite()'
+  }, clergySid);
+  Logger.log('✓ Clergy row written, submission_id=' + clergySid);
+
+  // 3. Questionnaire
+  const questionnaireSid = testId + '-questionnaire';
+  writeQuestionnaireRow(now, {
+    consent: 'Yes',
+    state_capital: 'Lagos (Ikeja/Lagos Island)',
+    church_name: 'Test Church',
+    denomination: 'Roman Catholic',
+    role: 'Regular worshipper',
+    gender: 'Female',
+    age_group: '25–34 years',
+    years_at_church: '1–5 years',
+    attendance: '500–1,000',
+    lives_within_5km: 'Yes',
+    education: 'Tertiary',
+    employment: 'Employed full-time',
+    children_attending: 'No',
+    b_freq_1: '3',
+    e35_likes: 'Test run'
+  }, questionnaireSid);
+  Logger.log('✓ Questionnaire row written, submission_id=' + questionnaireSid);
+
+  // 4. Idempotency check — re-using the same submission_id should NOT append a duplicate
+  if (hasSubmissionId('Field_Checklists', checklistSid)) {
+    Logger.log('✓ Idempotency check passes: ' + checklistSid + ' is detected as already present');
+  } else {
+    Logger.log('✗ Idempotency check FAILED: submission_id was not found after write');
+  }
 }

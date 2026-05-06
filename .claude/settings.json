@@ -11,7 +11,10 @@
       "Bash(cp \"/Users/zacchaeusjames/Documents/Documents - Zacchaeus'/Web projects/research-app/api/AppsScript_Backend.gs\" /tmp/_check.js)",
       "Bash(command -v pandoc)",
       "Bash(command -v textutil)",
-      "Bash(git check-ignore *)"
+      "Bash(git check-ignore *)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(git -C . check-ignore --no-index -v -- \"Interview Schedules.docx\")",
+      "Bash(echo \"untracked exit=$?\")"
     ]
   }
 }

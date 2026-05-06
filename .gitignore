@@ -1,1 +1,91 @@
+# ============================================================
+# Project-specific
+# ============================================================
 /DEPLOYMENT_GUIDE.md
+
+# ============================================================
+# OS junk
+# ============================================================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ============================================================
+# Editors / IDEs
+# ============================================================
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.shared.json
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+
+# ============================================================
+# Node / npm / pnpm / yarn (no deps today, but defensive)
+# ============================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm
+.pnp
+.pnp.js
+.pnpm-store/
+
+# ============================================================
+# Environment & secrets
+# ============================================================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ============================================================
+# Vercel local artefacts
+# ============================================================
+.vercel
+.now
+
+# ============================================================
+# Build / cache output
+# ============================================================
+dist/
+build/
+out/
+.cache/
+.parcel-cache/
+.turbo/
+coverage/
+
+# ============================================================
+# Apps Script local CLI (clasp)
+# ============================================================
+.clasp.json
+.clasprc.json
+
+# ============================================================
+# Personal Claude Code settings (the shared settings.json stays tracked)
+# ============================================================
+.claude/settings.local.json
+.claude/cache/
+.claude/logs/
+
+# ============================================================
+# Word document lock files & temp scratch
+# ============================================================
+~$*.docx
+~$*.doc
+*.tmp
+*.bak
+.backup/
+/tmp/

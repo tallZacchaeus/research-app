@@ -8,7 +8,10 @@
       "Bash(cp api/AppsScript_Backend.gs /tmp/_check.js)",
       "Bash(node --check /tmp/_check.js)",
       "Bash(rm /tmp/_check.js)",
-      "Bash(cp \"/Users/zacchaeusjames/Documents/Documents - Zacchaeus'/Web projects/research-app/api/AppsScript_Backend.gs\" /tmp/_check.js)"
+      "Bash(cp \"/Users/zacchaeusjames/Documents/Documents - Zacchaeus'/Web projects/research-app/api/AppsScript_Backend.gs\" /tmp/_check.js)",
+      "Bash(command -v pandoc)",
+      "Bash(command -v textutil)",
+      "Bash(git check-ignore *)"
     ]
   }
 }

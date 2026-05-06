@@ -102,22 +102,19 @@ function buildRow(headers, submittedAt, data, submissionId) {
 
 function writeClergyRow(submittedAt, data, submissionId) {
   const sheet = getOrCreateSheet('Clergy_Interviews');
-  const headers = getClergyHeaders();
-  ensureHeaders(sheet, headers);
+  const headers = ensureHeaders(sheet, getClergyHeaders());
   sheet.appendRow(buildRow(headers, submittedAt, data, submissionId));
 }
 
 function writeChecklistRow(submittedAt, data, submissionId) {
   const sheet = getOrCreateSheet('Field_Checklists');
-  const headers = getChecklistHeaders();
-  ensureHeaders(sheet, headers);
+  const headers = ensureHeaders(sheet, getChecklistHeaders());
   sheet.appendRow(buildRow(headers, submittedAt, data, submissionId));
 }
 
 function writeQuestionnaireRow(submittedAt, data, submissionId) {
   const sheet = getOrCreateSheet('Questionnaire_Responses');
-  const headers = getQuestionnaireHeaders();
-  ensureHeaders(sheet, headers);
+  const headers = ensureHeaders(sheet, getQuestionnaireHeaders());
   sheet.appendRow(buildRow(headers, submittedAt, data, submissionId));
 }
 
@@ -262,15 +259,40 @@ function getOrCreateSheet(name) {
   return sheet;
 }
 
-function ensureHeaders(sheet, headers) {
+/**
+ * Ensure the sheet contains every expected header.
+ *  - Empty sheet → write the full expected header row.
+ *  - Existing sheet → keep current order intact, append any missing headers to the right.
+ *
+ * Returns the array of headers actually present in the sheet (in order),
+ * which callers should use when assembling rows so column order matches the sheet.
+ */
+function ensureHeaders(sheet, expectedHeaders) {
   if (sheet.getLastRow() === 0) {
-    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-    sheet.getRange(1, 1, 1, headers.length)
+    sheet.getRange(1, 1, 1, expectedHeaders.length).setValues([expectedHeaders]);
+    sheet.getRange(1, 1, 1, expectedHeaders.length)
       .setFontWeight('bold')
       .setBackground('#f5f2eb')
       .setBorder(false, false, true, false, false, false);
     sheet.setFrozenRows(1);
+    return expectedHeaders.slice();
   }
+
+  const lastCol = sheet.getLastColumn();
+  const existing = sheet.getRange(1, 1, 1, lastCol).getValues()[0]
+    .map(v => v == null ? '' : String(v));
+  const existingSet = new Set(existing);
+  const missing = expectedHeaders.filter(h => !existingSet.has(h));
+
+  if (missing.length > 0) {
+    sheet.getRange(1, lastCol + 1, 1, missing.length).setValues([missing]);
+    sheet.getRange(1, lastCol + 1, 1, missing.length)
+      .setFontWeight('bold')
+      .setBackground('#f5f2eb');
+    return existing.concat(missing);
+  }
+
+  return existing;
 }
 
 // ============ SETUP (run once manually) ============
@@ -288,6 +310,34 @@ function setupSheets() {
   Logger.log('Clergy headers: ' + getClergyHeaders().length + ' columns');
   Logger.log('Checklist headers: ' + getChecklistHeaders().length + ' columns');
   Logger.log('Questionnaire headers: ' + getQuestionnaireHeaders().length + ' columns');
+}
+
+// ============ ONE-TIME CLEANUP (run after the broken test) ============
+/**
+ * The first test run wrote rows with values misaligned by one column
+ * (because the sheet still had the old headers and the new row was
+ * 1 cell longer). Run this ONCE to delete every row whose first column
+ * starts with "TEST-" so the misaligned data goes away. After it runs,
+ * re-run testWrite() to confirm idempotency works.
+ */
+function cleanupTestRows() {
+  ['Clergy_Interviews', 'Field_Checklists', 'Questionnaire_Responses'].forEach(name => {
+    const sheet = getOrCreateSheet(name);
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) return;
+    const lastCol = sheet.getLastColumn();
+    const rows = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+    let removed = 0;
+    // Iterate bottom-up so deletes don't shift our indices
+    for (let i = rows.length - 1; i >= 0; i--) {
+      const flat = rows[i].map(c => String(c)).join(' | ');
+      if (flat.indexOf('TEST-') !== -1 || flat.indexOf('TEST_001') !== -1) {
+        sheet.deleteRow(i + 2);
+        removed++;
+      }
+    }
+    Logger.log(name + ': removed ' + removed + ' test row(s)');
+  });
 }
 
 // ============ TEST FUNCTION (run after deploy to verify) ============

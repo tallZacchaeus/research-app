@@ -1,0 +1,12 @@
+{
+  "name": "church-security-research",
+  "version": "1.0.0",
+  "description": "Research instrument suite for church security architecture study",
+  "scripts": {
+    "build": "echo 'Static site - no build needed'",
+    "dev": "npx serve public"
+  },
+  "author": "Arc Oluseye Dairo",
+  "license": "UNLICENSED",
+  "private": true
+}
